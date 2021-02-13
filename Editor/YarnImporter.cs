@@ -1,14 +1,14 @@
 using UnityEngine;
 using UnityEditor;
-using UnityEditor.Experimental.AssetImporters;
+
 using System.IO;
 using System.Linq;
 using System.Globalization;
 using Yarn;
 using Yarn.Compiler;
 
-[ScriptedImporter(1, new[] {"yarn", "yarnc"})]
-public class YarnImporter : ScriptedImporter
+[UnityEditor.AssetImporters.ScriptedImporter(1, new[] {"yarn", "yarnc"})]
+public class YarnImporter : UnityEditor.AssetImporters.ScriptedImporter
 {    
     // culture identifiers like en-US
     public string baseLanguageID;
@@ -40,7 +40,7 @@ public class YarnImporter : ScriptedImporter
         return false;
     }
 
-    public override void OnImportAsset(AssetImportContext ctx)
+    public override void OnImportAsset(UnityEditor.AssetImporters.AssetImportContext ctx)
     {
 
         var extension = System.IO.Path.GetExtension(ctx.assetPath);
@@ -60,7 +60,7 @@ public class YarnImporter : ScriptedImporter
         }
     }
 
-    private void ImportYarn(AssetImportContext ctx)
+    private void ImportYarn(UnityEditor.AssetImporters.AssetImportContext ctx)
     {
         var sourceText = File.ReadAllText(ctx.assetPath);
         string fileName = System.IO.Path.GetFileNameWithoutExtension(ctx.assetPath);
@@ -156,7 +156,7 @@ public class YarnImporter : ScriptedImporter
         }
     }
 
-    private void ImportCompiledYarn(AssetImportContext ctx) {
+    private void ImportCompiledYarn(UnityEditor.AssetImporters.AssetImportContext ctx) {
 
         var bytes = File.ReadAllBytes(ctx.assetPath);
 

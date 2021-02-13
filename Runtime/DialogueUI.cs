@@ -65,6 +65,21 @@ namespace Yarn.Unity {
         public float textSpeed = 0.025f;
 
         /// <summary>
+        /// How quickly to show the text after periods.
+        /// </summary>
+        [Tooltip("How quickly to show the text after periods.")]
+        public float periodSpeedMultiplier = 2.0f;
+
+        /// <summary>
+        /// How quickly to show the text, in seconds per character
+        /// </summary>
+        [Tooltip("How quickly to show the text after commas.")]
+        public float commaSpeedMultiplier = 1.5f;
+
+        // Custom bools for parsing
+        public bool parseCharacterNames = false;
+
+        /// <summary>
         /// The buttons that let the user choose an option.
         /// </summary>
         /// <remarks>
@@ -123,6 +138,10 @@ namespace Yarn.Unity {
         /// </remarks>
         public UnityEngine.Events.UnityEvent onLineStart;
 
+        public DialogueRunner.StringUnityEvent onLineStringStart;
+
+        public DialogueRunner.StringUnityEvent onLineCharacterStart;
+
         /// <summary>
         /// A <see cref="UnityEngine.Events.UnityEvent"/> that is called
         /// when a line has finished being delivered.
@@ -172,6 +191,8 @@ namespace Yarn.Unity {
         /// <seealso cref="textSpeed"/>
         /// <seealso cref="onLineFinishDisplaying"/>
         public DialogueRunner.StringUnityEvent onLineUpdate;
+
+        public DialogueRunner.IntegerUnityEvent onPositionUpdate;
         
         /// <summary>
         /// A <see cref="UnityEngine.Events.UnityEvent"/> that is called
@@ -285,9 +306,24 @@ namespace Yarn.Unity {
                 text = line.ID;
             }
 
+            if (parseCharacterNames && text.Contains(":"))
+            {
+                string[] splitText = text.Split(':');
+                string name = splitText[0];
+
+                onLineCharacterStart?.Invoke(name);
+
+                text = text.Remove(0, name.Length + 2); // remove + 2 to account for the : and the space
+            }
+
+            // regardless of speed, call this function.
+            onLineStringStart?.Invoke(text);
+
             if (textSpeed > 0.0f) {
                 // Display the line one character at a time
                 var stringBuilder = new StringBuilder ();
+
+                int i = 0;
 
                 foreach (char c in text) {
                     stringBuilder.Append (c);
@@ -296,13 +332,26 @@ namespace Yarn.Unity {
                         // We've requested a skip of the entire line.
                         // Display all of the text immediately.
                         onLineUpdate?.Invoke(text);
+                        onPositionUpdate?.Invoke(text.Length);
                         break;
                     }
-                    yield return new WaitForSeconds (textSpeed);
+
+                    float waitTime = textSpeed;
+
+                    if (i != text.Length - 1)
+                    {
+                        if (c == ',') waitTime *= commaSpeedMultiplier;
+                        else if (c == '.') waitTime *= periodSpeedMultiplier;
+                    }
+
+                    i++;
+                    onPositionUpdate?.Invoke(i);
+                    yield return new WaitForSeconds (waitTime);
                 }
             } else {
                 // Display the entire line immediately if textSpeed <= 0
                 onLineUpdate?.Invoke(text);
+                onPositionUpdate?.Invoke(text.Length);
             }
 
             // We're now waiting for the player to move on to the next line

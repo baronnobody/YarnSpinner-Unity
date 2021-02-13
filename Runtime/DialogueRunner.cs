@@ -102,6 +102,18 @@ namespace Yarn.Unity
         public class StringUnityEvent : UnityEvent<string> { }
 
         /// <summary>
+        /// A type of <see cref="UnityEvent"/> that takes a single string
+        /// parameter. 
+        /// </summary>
+        /// <remarks>
+        /// A concrete subclass of <see cref="UnityEvent"/> is needed in
+        /// order for Unity to serialise the type correctly.
+        /// </remarks>
+        [Serializable]
+        public class IntegerUnityEvent : UnityEvent<int> { }
+
+
+        /// <summary>
         /// A Unity event that is called when a node starts running.
         /// </summary>
         /// <remarks>
